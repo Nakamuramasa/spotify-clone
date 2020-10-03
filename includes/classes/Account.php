@@ -5,7 +5,7 @@ class Account {
 
     public function __construct($con){
         $this->con = $con;
-        $this->errorArray = [];
+        $this->errorArray = array();
     }
 
     public function register($un, $fn, $ln, $em, $em2, $pw, $pw2){
@@ -15,7 +15,7 @@ class Account {
         $this->validateEmails($em, $em2);
         $this->validatePasswords($pw, $pw2);
 
-        if(empty($this->errorArray)) return $this->insertUserDetails($un, $fn, $ln, $em, $pw);
+        if(empty($this->errorArray) == true) return $this->insertUserDetails($un, $fn, $ln, $em, $pw);
         else return false;
     }
 
@@ -29,7 +29,8 @@ class Account {
         $profilePic = "assets/images/profile-pics/head_emerald.png";
         $date = date("Y-m-d");
 
-        $result = mysqli_query($this->con, "INSERT INTO users VALUES ('', '$un', '$fn', '$ln', '$em', '$encryptedPw', '$date', '$profilePic')");
+        $result = mysqli_query($this->con, "INSERT INTO users VALUES (0, '$un', '$fn', '$ln', '$em', '$encryptedPw', '$date', '$profilePic')");
+
         return $result;
     }
 
@@ -73,13 +74,14 @@ class Account {
         }
 
         if(preg_match('/[^A-Za-z0-9]/', $pw)){
-            array_push($this->errorArray, Constants::$passwordCharacters);
+            array_push($this->errorArray, Constants::$passwordNotAlphanumeric);
             return;
         }
 
         if(strlen($pw) > 30 || strlen($pw) < 5){
-            array_push($this->errorArray, Constants::$passwordNotAlphanumeric);
+            array_push($this->errorArray, Constants::$passwordCharacters);
             return;
         }
     }
 }
+?>
