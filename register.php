@@ -23,6 +23,7 @@ function getInputValue($name){
         <form action="register.php" id="loginForm" method="POST">
             <h2>Login to your acount</h2>
             <p>
+                <?php echo $account->getError(Constants::$loginFailed); ?>
                 <label for="loginUsername">Username</label>
                 <input type="text" name="loginUsername" id="loginUsername" placeholder="JohnSmith" required>
             </p>
@@ -37,6 +38,7 @@ function getInputValue($name){
             <h2>Create your free account</h2>
             <p>
                 <?php echo $account->getError(Constants::$usernameCharacters); ?>
+                <?php echo $account->getError(Constants::$usernameTaken); ?>
                 <label for="username">Username</label>
                 <input type="text" name="username" id="username" placeholder="JohnSmith" value="<?php getInputValue('username') ?>" required>
             </p>
@@ -56,6 +58,7 @@ function getInputValue($name){
             <p>
                 <?php echo $account->getError(Constants::$emailsDoNotMatch); ?>
                 <?php echo $account->getError(Constants::$emailInvalid); ?>
+                <?php echo $account->getError(Constants::$emailTaken); ?>
                 <label for="email">Email</label>
                 <input type="email" name="email" id="email" placeholder="john@example.com" value="<?php getInputValue('email') ?>" required>
             </p>
