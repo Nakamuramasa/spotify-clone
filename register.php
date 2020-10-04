@@ -23,6 +23,24 @@ function getInputValue($name){
     <script src="assets/js/register.js"></script>
 </head>
 <body>
+    <?php
+    if(isset($_POST['registerButton'])){
+        echo '<script>
+            $(document).ready(() => {
+                $("#loginForm").hide();
+                $("#registerForm").show();
+            });
+        </script>';
+    }else{
+        echo '<script>
+            $(document).ready(() => {
+                $("#loginForm").show();
+                $("#registerForm").hide();
+            });
+        </script>';
+    }
+    ?>
+
     <div id="background">
         <div id="loginContainer">
             <div id="inputContainer">
@@ -31,7 +49,7 @@ function getInputValue($name){
                     <p>
                         <?php echo $account->getError(Constants::$loginFailed); ?>
                         <label for="loginUsername">Username</label>
-                        <input type="text" name="loginUsername" id="loginUsername" placeholder="JohnSmith" required>
+                        <input type="text" name="loginUsername" id="loginUsername" placeholder="JohnSmith" value="<?php getInputValue('loginUsername') ?>" required>
                     </p>
                     <p>
                         <label for="loginPassword">Password</label>
@@ -99,6 +117,17 @@ function getInputValue($name){
                     </div>
                 </form>
             </div>
+
+            <div id="loginText">
+                <h1>Get great music, right now</h1>
+                <h2>Listen to loads of songs for free</h2>
+                <ul>
+                    <li>Discover music you'll fall in love with</li>
+                    <li>Create your own playlists</li>
+                    <li>Follow artists to keep up to date</li>
+                </ul>
+            </div>
+
         </div>
     </div>
 </body>
