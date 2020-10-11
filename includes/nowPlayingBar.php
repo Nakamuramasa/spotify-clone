@@ -138,12 +138,9 @@ function setTrack(trackId, newPlaylist, play){
         }));
 
         audioElement.setTrack(track);
-        playSong();
-    }));
 
-    if(play){
-        audioElement.play();
-    }
+        if(play) playSong();
+    }));
 }
 
 function playSong(){
