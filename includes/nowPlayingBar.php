@@ -7,157 +7,160 @@ $jsonArray = json_encode($resultArray);
 ?>
 
 <script>
-$(document).ready(function() {
-	let newPlaylist = <?php echo $jsonArray; ?>;
-    audioElement = new Audio();
-    setTimeout(() => {
-        setTrack(newPlaylist[0], newPlaylist, false);
-        updateVolumeProgressBar(audioElement.audio);
-    }, 1000);
+    $(document).ready(function() {
+        let newPlaylist = <?php echo $jsonArray; ?>;
+        audioElement = new Audio();
+        setTimeout(() => {
+            setTrack(newPlaylist[0], newPlaylist, false);
+            updateVolumeProgressBar(audioElement.audio);
+        }, 1000);
 
-    $("#nowPlayingBarContainer").on("mousedown touchstart mousemove touchmove", ((e) => {
-        e.preventDefault();
-    }));
+        $("#nowPlayingBarContainer").on("mousedown touchstart mousemove touchmove", ((e) => {
+            e.preventDefault();
+        }));
 
-    $(".playbackBar .progressBar").mousedown(() => {
-		mouseDown = true;
-	});
+        $(".playbackBar .progressBar").mousedown(() => {
+            mouseDown = true;
+        });
 
-	$(".playbackBar .progressBar").mousemove(function(e) {
-		if(mouseDown) timeFromOffset(e, this);
-	});
+        $(".playbackBar .progressBar").mousemove(function(e) {
+            if(mouseDown) timeFromOffset(e, this);
+        });
 
-	$(".playbackBar .progressBar").mouseup(function(e) {
-		timeFromOffset(e, this);
-    });
+        $(".playbackBar .progressBar").mouseup(function(e) {
+            timeFromOffset(e, this);
+        });
 
-    $(".volumeBar .progressBar").mousedown(() => {
-		mouseDown = true;
-	});
+        $(".volumeBar .progressBar").mousedown(() => {
+            mouseDown = true;
+        });
 
-	$(".volumeBar .progressBar").mousemove(function(e) {
-		if(mouseDown) {
+        $(".volumeBar .progressBar").mousemove(function(e) {
+            if(mouseDown) {
+                var volumePercentage = e.offsetX / $(this).width();
+                if(volumePercentage >= 0 && volumePercentage <= 1) audioElement.audio.volume = volumePercentage;
+            }
+        });
+
+        $(".volumeBar .progressBar").mouseup(function(e) {
             var volumePercentage = e.offsetX / $(this).width();
             if(volumePercentage >= 0 && volumePercentage <= 1) audioElement.audio.volume = volumePercentage;
+        });
+
+        $(document).mouseup(() => {
+            mouseDown = false;
+        });
+    });
+
+    function timeFromOffset(mouse, progressBar) {
+        let percentage = mouse.offsetX / $(progressBar).width() * 100;
+        let seconds = audioElement.audio.duration * (percentage / 100);
+        audioElement.setTime(seconds);
+    }
+
+    function prevSong(){
+        if(audioElement.audio.currentTime >= 3 || currentIndex == 0){
+            audioElement.setTime(0);
+        }else{
+            currentIndex--;
+            setTrack(currentPlaylist[currentIndex], currentPlaylist, true);
         }
-	});
-
-	$(".volumeBar .progressBar").mouseup(function(e) {
-		var volumePercentage = e.offsetX / $(this).width();
-        if(volumePercentage >= 0 && volumePercentage <= 1) audioElement.audio.volume = volumePercentage;
-	});
-
-	$(document).mouseup(() => {
-		mouseDown = false;
-	});
-});
-
-function timeFromOffset(mouse, progressBar) {
-	let percentage = mouse.offsetX / $(progressBar).width() * 100;
-	let seconds = audioElement.audio.duration * (percentage / 100);
-	audioElement.setTime(seconds);
-}
-
-function prevSong(){
-    if(audioElement.audio.currentTime >= 3 || currentIndex == 0){
-        audioElement.setTime(0);
-    }else{
-        currentIndex--;
-        setTrack(currentPlaylist[currentIndex], currentPlaylist, true);
-    }
-}
-
-function nextSong(){
-    if(repeat){
-        audioElement.setTime(0);
-        playSong();
-        return;
-    }
-    if(currentIndex == currentPlaylist.length - 1) currentIndex = 0;
-    else currentIndex++;
-
-    let trackToPlay = shuffle ? shufflePlaylist[currentIndex] : currentPlaylist[currentIndex];
-    setTrack(trackToPlay, currentPlaylist, true);
-}
-
-function setRepeat(){
-    repeat = !repeat;
-    let repeatImageName = repeat ? "repeat-active.png" : "repeat.png";
-    $(".controlButton.repeat img").attr("src", `assets/images/icons/${repeatImageName}`);
-}
-
-function setMute(){
-    audioElement.audio.muted = !audioElement.audio.muted;
-    let muteImageName = audioElement.audio.muted ? "volume-mute.png" : "volume.png";
-    $(".controlButton.volume img").attr("src", `assets/images/icons/${muteImageName}`);
-}
-
-function setShuffle(){
-    shuffle = !shuffle;
-    let shuffleImageName = shuffle ? "shuffle-active.png" : "shuffle.png";
-    $(".controlButton.shuffle img").attr("src", `assets/images/icons/${shuffleImageName}`);
-
-    if(shuffle){
-        shuffleArray(shufflePlaylist);
-        currentIndex = shufflePlaylist.indexOf(audioElement.currentlyPlaying.id);
-    }else{
-        currentIndex = currentPlaylist.indexOf(audioElement.currentlyPlaying.id);
-    }
-}
-
-function shuffleArray(playlist){
-    for(let i=playlist.length; 1<i; i--) {
-        let j = Math.floor(Math.random() * i);
-        [playlist[j], playlist[i - 1]] = [playlist[i - 1], playlist[j]];
-    }
-}
-
-function setTrack(trackId, newPlaylist, play){
-    if(newPlaylist != currentPlaylist){
-        currentPlaylist = newPlaylist;
-        shufflePlaylist = currentPlaylist.slice();
-        shuffleArray(shufflePlaylist);
     }
 
-    if(shuffle) currentIndex = shufflePlaylist.indexOf(trackId);
-    else currentIndex = currentPlaylist.indexOf(trackId);
-    pauseSong();
+    function nextSong(){
+        if(repeat){
+            audioElement.setTime(0);
+            playSong();
+            return;
+        }
+        if(currentIndex == currentPlaylist.length - 1) currentIndex = 0;
+        else currentIndex++;
 
-    $.post("includes/handlers/ajax/getSongJson.php", {songId: trackId}, ((data) => {
-        let track = JSON.parse(data);
-        $(".trackName span").text(track.title);
+        let trackToPlay = shuffle ? shufflePlaylist[currentIndex] : currentPlaylist[currentIndex];
+        setTrack(trackToPlay, currentPlaylist, true);
+    }
 
-        $.post("includes/handlers/ajax/getArtistJson.php", {artistId: track.artist}, ((data) => {
-            let artist = JSON.parse(data);
-            $(".artistName span").text(artist.name);
+    function setRepeat(){
+        repeat = !repeat;
+        let repeatImageName = repeat ? "repeat-active.png" : "repeat.png";
+        $(".controlButton.repeat img").attr("src", `assets/images/icons/${repeatImageName}`);
+    }
+
+    function setMute(){
+        audioElement.audio.muted = !audioElement.audio.muted;
+        let muteImageName = audioElement.audio.muted ? "volume-mute.png" : "volume.png";
+        $(".controlButton.volume img").attr("src", `assets/images/icons/${muteImageName}`);
+    }
+
+    function setShuffle(){
+        shuffle = !shuffle;
+        let shuffleImageName = shuffle ? "shuffle-active.png" : "shuffle.png";
+        $(".controlButton.shuffle img").attr("src", `assets/images/icons/${shuffleImageName}`);
+
+        if(shuffle){
+            shuffleArray(shufflePlaylist);
+            currentIndex = shufflePlaylist.indexOf(audioElement.currentlyPlaying.id);
+        }else{
+            currentIndex = currentPlaylist.indexOf(audioElement.currentlyPlaying.id);
+        }
+    }
+
+    function shuffleArray(playlist){
+        for(let i=playlist.length; 1<i; i--) {
+            let j = Math.floor(Math.random() * i);
+            [playlist[j], playlist[i - 1]] = [playlist[i - 1], playlist[j]];
+        }
+    }
+
+    function setTrack(trackId, newPlaylist, play){
+        if(newPlaylist != currentPlaylist){
+            currentPlaylist = newPlaylist;
+            shufflePlaylist = currentPlaylist.slice();
+            shuffleArray(shufflePlaylist);
+        }
+
+        if(shuffle) currentIndex = shufflePlaylist.indexOf(trackId);
+        else currentIndex = currentPlaylist.indexOf(trackId);
+        pauseSong();
+
+        $.post("includes/handlers/ajax/getSongJson.php", {songId: trackId}, ((data) => {
+            let track = JSON.parse(data);
+            $(".trackName span").text(track.title);
+
+            $.post("includes/handlers/ajax/getArtistJson.php", {artistId: track.artist}, ((data) => {
+                let artist = JSON.parse(data);
+                $(".artistName span").text(artist.name);
+                $(".artistName span").attr("onclick", "openPage('artist.php?id=" + artist.id + "')");
+            }));
+
+            $.post("includes/handlers/ajax/getAlbumJson.php", {albumId: track.album}, ((data) => {
+                let album = JSON.parse(data);
+                $(".albumLink img").attr("src", album.artworkPath);
+                $(".albumLink img").attr("onclick", "openPage('album.php?id=" + album.id + "')");
+                $(".trackName span").attr("onclick", "openPage('album.php?id=" + album.id + "')");
+            }));
+
+            audioElement.setTrack(track);
+
+            if(play) playSong();
         }));
-
-        $.post("includes/handlers/ajax/getAlbumJson.php", {albumId: track.album}, ((data) => {
-            let album = JSON.parse(data);
-            $(".albumLink img").attr("src", album.artworkPath);
-        }));
-
-        audioElement.setTrack(track);
-
-        if(play) playSong();
-    }));
-}
-
-function playSong(){
-    if(audioElement.audio.currentTime == 0){
-        $.post("includes/handlers/ajax/updatePlays.php", {songId: audioElement.currentlyPlaying.id});
     }
 
-    $(".controlButton.play").hide();
-    $(".controlButton.pause").show();
-    audioElement.play();
-}
+    function playSong(){
+        if(audioElement.audio.currentTime == 0){
+            $.post("includes/handlers/ajax/updatePlays.php", {songId: audioElement.currentlyPlaying.id});
+        }
 
-function pauseSong(){
-    $(".controlButton.play").show();
-    $(".controlButton.pause").hide();
-    audioElement.pause();
-}
+        $(".controlButton.play").hide();
+        $(".controlButton.pause").show();
+        audioElement.play();
+    }
+
+    function pauseSong(){
+        $(".controlButton.play").show();
+        $(".controlButton.pause").hide();
+        audioElement.pause();
+    }
 </script>
 
 <div id="nowPlayingBarContainer">
@@ -166,15 +169,15 @@ function pauseSong(){
         <div id="nowPlayingLeft">
             <div class="content">
                 <span class="albumLink">
-                    <img src="" class="albumArtwork">
+                    <img role="link" tabindex="0" src="" class="albumArtwork">
                 </span>
 
                 <div class="trackInfo">
                     <span class="trackName">
-                        <span></span>
+                        <span role="link" tabindex="0"></span>
                     </span>
                     <span class="artistName">
-                        <span></span>
+                        <span role="link" tabindex="0"></span>
                     </span>
                 </div>
 
