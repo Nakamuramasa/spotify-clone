@@ -29,7 +29,21 @@ function createPlaylist(){
                 return;
             }
             openPage("yourMusic.php");
-        })
+        });
+    }
+}
+
+function deletePlaylist(playlistId){
+    let prompt = confirm("Are you sure you want to delete this playlist?");
+    if(prompt){
+        $.post("includes/handlers/ajax/deletePlaylist.php", {playlistId: playlistId})
+        .done((error) => {
+            if(error != ""){
+                alert(error);
+                return;
+            }
+            openPage("yourMusic.php");
+        });
     }
 }
 
