@@ -9,6 +9,35 @@ var shuffle = false;
 var userLoggedIn;
 var timer;
 
+$(document).click((click) => {
+    let target = $(click.target);
+    if(!target.hasClass("item") && !target.hasClass("optionsButton")){
+        hideOptionsMenu();
+    }
+});
+
+$(window).scroll(() => {
+    hideOptionsMenu();
+});
+
+$(document).on("change", "select.playlist", function() {
+	let select = $(this);
+	let playlistId = select.val();
+    let songId = select.prev(".songId").val();
+
+	$.post("includes/handlers/ajax/addToPlaylist.php", { playlistId: playlistId, songId: songId})
+	.done(function(error) {
+
+		if(error != "") {
+			alert(error);
+			return;
+		}
+
+		hideOptionsMenu();
+		select.val("");
+	});
+});
+
 function openPage(url){
     if(timer != null) clearTimeout(timer);
 
@@ -17,6 +46,19 @@ function openPage(url){
     $("#mainContent").load(encodedUrl);
     $("body").scrollTop(0);
     history.pushState(null, null, url);
+}
+
+function removeFromPlaylist(button, playlistId){
+    let songId = $(button).prevAll(".songId").val();
+
+    $.post("includes/handlers/ajax/removeFromPlaylist.php", {playlistId: playlistId, songId: songId})
+    .done((error) => {
+        if(error != ""){
+            alert(error);
+            return;
+        }
+        openPage(`playlist.php?id=${playlistId}`);
+    });
 }
 
 function createPlaylist(){
@@ -45,6 +87,28 @@ function deletePlaylist(playlistId){
             openPage("yourMusic.php");
         });
     }
+}
+
+function hideOptionsMenu(){
+    let menu = $(".optionsMenu");
+    if(menu.css("display") != "none"){
+        menu.css("display", "none");
+    }
+}
+
+function showOptionsMenu(button) {
+    let songId = $(button).prevAll(".songId").val();
+	let menu = $(".optionsMenu");
+    let menuWidth = menu.width();
+    menu.find(".songId").val(songId);
+
+	let scrollTop = $(window).scrollTop();
+	let elementOffset = $(button).offset().top;
+
+	let top = elementOffset - scrollTop;
+	let left = $(button).position().left;
+
+	menu.css({ "top": top + "px", "left": left - menuWidth + "px", "display": "inline" });
 }
 
 function formatTime(durationSeconds){
