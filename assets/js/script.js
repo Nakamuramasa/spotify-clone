@@ -38,6 +38,38 @@ $(document).on("change", "select.playlist", function() {
 	});
 });
 
+function updateEmail(emailClass){
+    let emailValue = $(`.${emailClass}`).val();
+
+    $.post("includes/handlers/ajax/updateEmail.php", {email: emailValue, username: userLoggedIn})
+    .done((response) => {
+        $(`.${emailClass}`).nextAll(".message").text(response);
+    });
+}
+
+function updatePassword(oldPasswordClass, newPasswordClass1, newPasswordClass2){
+    let oldPassword = $(`.${oldPasswordClass}`).val();
+    let newPassword1 = $(`.${newPasswordClass1}`).val();
+    let newPassword2 = $(`.${newPasswordClass2}`).val();
+
+    $.post("includes/handlers/ajax/updatePassword.php",
+        {
+            oldPassword: oldPassword,
+            newPassword1: newPassword1,
+            newPassword2: newPassword2,
+            username: userLoggedIn
+        })
+    .done((response) => {
+        $(`.${oldPasswordClass}`).nextAll(".message").text(response);
+    });
+}
+
+function logout(){
+    $.post("includes/handlers/ajax/logout.php", ()=>{
+        location.reload();
+    });
+}
+
 function openPage(url){
     if(timer != null) clearTimeout(timer);
 
